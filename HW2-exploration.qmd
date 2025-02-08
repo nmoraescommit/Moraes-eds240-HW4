@@ -1,0 +1,135 @@
+---
+title: "Exploratory Data Analysis for HW 4"
+author: "Naomi Moraes"
+date: 2025-02-07
+format:
+  html:
+    embed-resources: true # this ensures that your rendered .html file is self-contained, so we (your instructors) can open it and view all your work
+toc: true
+editor_options: 
+  chunk_output_type: console
+warning: false
+message: false
+---
+
+# Homework 2, Part 2
+
+```{r}
+# Load Libraries
+library(tidycensus)
+library(dplyr)
+library(here)
+library(janitor)
+library(tidyverse)
+library(tidyr)
+library(plotly)
+library(ggplot2)
+library(scales)
+```
+
+## Data Wrangling
+
+First, we want to retrieve our data via tidycensus. Here, I'm interested in data concerning income inequality - and will be looking at median household income, and populations that recieve incomes below and above the poverty level. I will be using data at the county level, as I feel like this will allow me to have a broad understanding of the data, while I might be able to manipulate the data at the granular level if I so choose. (E.g. In the future, I can look at the mean/median incomes by the 10 poorest counties in each state.)
+
+```{r}
+# Look at definitions of variables with American Community Survey
+acs_vars <- tidycensus::load_variables(year = 2023,
+                                       dataset = "acs1")
+
+# Create df with variables concerning mean household income, incomes below and above poverty level
+income_poverty <- tidycensus::get_acs(
+  geography = "county",
+  year = 2023,
+  geometry = FALSE,
+  survey = "acs1",
+  variables = c("B19013_001", "B29003_002", "B29003_003"))
+
+# add column to create state column
+income_poverty <- income_poverty %>%
+  clean_names() %>%
+  separate(name, into = c("county", "state"), sep = ",")
+```
+
+## Exploratory Graphs
+
+```{r}
+# Data Vis 1
+
+# Looking at Median household income in the past 12 months (in 2023 inflation-adjusted dollars)
+explr_1 <- income_poverty %>%
+  filter(variable == "B19013_001") %>%
+  group_by(state) %>%
+  summarise(median = median(estimate))  %>% 
+  slice_max(order_by = median, n = 10)
+
+# Create bar plot
+explr_plot1 <- ggplot(data = explr_1, aes(x = state, y = median)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Median Household Income in Highest Earning States")+
+  ylab("2023 Dollars ($)") +
+  xlab("States")
+
+explr_plot1
+```
+
+This visualization allows us to see a bar graph of median household income estimates, for the 10 states with the highest median household incomes. We see that they are all fairly well-aligned. (I am surprised that California, is not in this list - and I hope to mitigate this bias when analyzing the rest of the data.) Things to look out for in further processing: the raw data provides the median household income by county. This might make interpretation difficult - as technically the bar-graph shows the median of the median household incomes by county.
+
+```{r}
+# Data Vis 2
+
+# Look at Income in the past 12 months below poverty level - earned by individuals
+explr_2 <- income_poverty %>%
+  filter(variable == "B29003_002") %>%
+  group_by(state) %>%
+  summarise(total_pop = sum(estimate))  %>% 
+  slice_max(order_by = total_pop, n = 10)
+
+# Create bar plot
+explr_plot2 <- ggplot(data = explr_2, aes(x = state, y = total_pop)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Individuals earning below Poverty Level by State")+
+  ylab("Number of Citizens") +
+  xlab("States") +
+  scale_y_continuous(labels = comma)
+
+explr_plot2
+```
+
+Next, I looked at the number of individuals earning incomes below poverty level in the year 2023. (California has the highest number of these observations (almost 1.5 times the number of Texas observations). Is this due to the population size in California - as we have more people residing here, we are statistically more likely to have more people earning below poverty level? Is the opposite true?) I would like to factor in more socio-economic characteristics like cost of living - to put these observations into further context.
+
+```{r}
+# Data Vis 3
+
+# Look at Income earned in the past 12 months at or above the poverty level, at the county population level, by state
+explr_3 <- income_poverty %>%
+  filter(variable == "B29003_003") %>%
+  filter(state %in% c(" California"," Texas", " New York", " Florida", " Kentucky", " Ohio", " Michigan", " Missouri"))
+
+# Create boxplot
+explr_plot3 <- ggplot(data = explr_3, aes(x = state, y = estimate)) +
+  geom_boxplot() +
+  coord_flip() +
+  labs(title = "Distribution of County Populations of Earning Incomes above Poverty Level")+
+  ylab("Number of Individuals") +
+  xlab("States") + 
+  scale_y_continuous(labels = comma) +
+  theme(plot.title = element_text(size = 10))
+
+
+explr_plot3
+```
+
+Finally, I looked at the distribution of county populations of randomly selected states. These county populations are the number of people in the county, that earn at or above the poverty level. I would like to create a function to filter our outlier observations - to look at the distributions more closely.
+
+## Questions
+
+1. What have you learned about your data? Have any potentially interesting patterns emerged?
+    I have learned that my data definitely needs to be tidied before I am able to use it effectively for visualization - which means I should start cleaning it sooner rather than later. I have also some some interesting patterns emerge - in poverty and income levels in different states. I would be curious to find similar visualizations - that incorporate social economic and geospatial factors.  
+
+2. In HW #1, you outlined some questions that you wanted to answer using these data. Have you made any strides towards answering those questions? If yes, how so? If no, what next steps do you need to take (e.g. I need to create X plot type, I still need to track down Y data, I need to restructure existing data so that you can visualize it in Z ways, etc.)?
+    I feel like I have started to refine my approach towards visualizing social-welfare inequality in America. I feel like I want to solidify the variables I'd like to use, as well as my overall approach to the visualization through a dummy chart. (I want to incorporate healthcare / education rates - but would like to do so in a manner that is still easily understood and cohesive.)
+
+3. What challenges do you foresee encountering with your data? These can be data wrangling and / or visualization challenges.
+    With the change in administration, it might be prudent to extract public data I might need sooner rather than later. As stated previously, it might be a bit of a task tidying them and finding the relationships between the data as well - which I'd rather have done now for a smoother plotting session later.
