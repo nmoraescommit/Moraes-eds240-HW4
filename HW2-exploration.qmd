@@ -89,7 +89,9 @@ explr_2 <- income_poverty %>%
 explr_plot2 <- ggplot(data = explr_2, aes(x = state, y = total_pop)) +
   geom_col() +
   coord_flip() +
-  labs(title = "Individuals earning below Poverty Level by State")+
+  labs(title = "Individuals earning below Poverty Level",
+     subtitle = "States with the largest population of individuals earning below poverty level",
+     caption = "Source: Census Bureau ACS (2023)")+
   ylab("Number of Citizens") +
   xlab("States") +
   scale_y_continuous(labels = comma)

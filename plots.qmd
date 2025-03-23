@@ -1,0 +1,273 @@
+---
+title: "Graphics for Infographic"
+author: "NM"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+# Load Libraries
+library(tidycensus)
+library(dplyr)
+library(here)
+library(janitor)
+library(tidyverse)
+library(tidyr)
+library(plotly)
+library(ggplot2)
+library(scales)
+library(geofacet)
+
+```
+
+```{r}
+# data
+pcap <- read_csv(here::here("data", "p_cap_clean2.csv"))
+gdp <- read_csv(here::here("data","gdp2.csv"))
+welfare <- read_csv(here::here("data", "welfare1.csv"))
+welfare_state <- read_csv(here::here("data", "welfare_state1.csv"))
+```
+
+```{r}
+state_mapping <- data.frame(
+  NAME = state.name,
+  Abbreviation = state.abb,
+  stringsAsFactors = FALSE
+)
+
+join <- state_mapping
+```
+
+```{r}
+# Add voting affiliation to join
+election <- c(
+  'CA' = 'D', 'OR' = 'D', 'CO' = 'D', 'NM' = 'D', 'MN' = 'D', 'IL' = 'D', 
+  'VA' = 'D', 'DC' = 'D', 'MD' = 'D', 'ME' = 'D', 'NH' = 'D', 'VT' = 'D', 
+  'NY' = 'D', 'MA' = 'D', 'CT' = 'D', 'NJ' = 'D', 'DE' = 'D', 'RI' = 'D',
+  'AL' = 'R', 'AK' = 'R', 'AZ' = 'R', 'AR' = 'R', 'FL' = 'R', 'GA' = 'R', 
+  'HI' = 'D', 'ID' = 'R', 'IN' = 'R', 'IA' = 'R', 'KS' = 'R', 'KY' = 'R', 
+  'LA' = 'R', 'MS' = 'R', 'MO' = 'R', 'MT' = 'R', 'NE' = 'R', 'NV' = 'R', 
+  'NC' = 'R', 'ND' = 'R', 'OH' = 'R', 'OK' = 'R', 'OR' = 'R', 'PA' = 'R', 
+  'SC' = 'R', 'SD' = 'R', 'TN' = 'R', 'TX' = 'R', 'UT' = 'R', 'WA' = 'D', 
+  'WI' = 'R', 'WY' = 'R', 'MI' = 'R', 'WV' = 'R'
+)
+
+join$election_status <- election[join$Abbreviation]
+
+clean_join <- join %>%
+  clean_names()
+```
+
+```{r}
+# create palette ----
+election_palette <- c("D" = "lightskyblue","R" = "lightcoral")
+```
+
+```{r}
+# create data for two bar graphs
+pcap_take_data <- pcap %>%
+  mutate(pcap_balance = as.numeric(gsub("[$,]", "", pcap_balance))) %>%
+  arrange(rank) %>%
+  slice_head(n = 10) %>%
+  left_join(select(clean_join, name, abbreviation, election_status), by="name") %>%
+  mutate(name = fct_reorder(.f = name, .x = pcap_balance))
+
+pcap_give_data <- pcap %>%
+  mutate(pcap_balance = as.numeric(gsub("[$,]", "", pcap_balance))) %>%
+  arrange(rank) %>%
+  slice_tail(n = 10) %>%
+  left_join(select(clean_join, name, abbreviation, election_status), by="name") %>%
+  mutate(name = fct_reorder(.f = name, .x = -(pcap_balance)))
+```
+
+```{r}
+  pcap_take_graph <- ggplot(data = pcap_take_data, aes(x = name, y = pcap_balance, fill = election_status)) +
+  scale_fill_manual(values = election_palette) +
+  geom_col() +
+  theme_light() + 
+  coord_flip() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none"
+  ) +
+  geom_text(aes(label = scales::dollar(pcap_balance)), hjust = 1.2, color = "black")
+
+ pcap_take_graph
+
+ggsave("take.jpg", pcap_take_graph)
+```
+
+```{r}
+  pcap_give_graph <- ggplot(data = pcap_give_data, aes(x = name, y = pcap_balance, fill = election_status)) +
+  ylim(c(-15187,0)) +
+  scale_fill_manual(values = election_palette) +
+  geom_col() +
+  theme_light() + 
+  coord_flip() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none"
+  ) +
+geom_text(aes(label = scales::dollar(pcap_balance)), hjust = 2, color = "black")
+
+pcap_give_graph
+
+ggsave("give.jpg", pcap_give_graph)
+```
+
+```{r}
+gdp_clean <- gdp %>%
+  clean_names() %>%
+  rename(president_party = x4)
+```
+
+```{r}
+gdp_line_graph <- ggplot(data = gdp_clean, aes(x = year, y = gdp_growth)) +
+  theme_light()+
+  #theme(
+    #axis.title.x = element_blank() 
+   # ) +
+  geom_rect(aes(xmin = 1997, xmax = 2000, ymin = -Inf, ymax = Inf), fill = '#D3F4FF', alpha=0.5) +
+  geom_rect(aes(xmin = 2000, xmax = 2008, ymin = -Inf, ymax = Inf), fill = '#FFBCBC', alpha=0.5) +
+  geom_rect(aes(xmin = 2008, xmax = 2016, ymin = -Inf, ymax = Inf), fill = '#D3F4FF', alpha=0.5) +
+  geom_rect(aes(xmin = 2016, xmax = 2020, ymin = -Inf, ymax = Inf), fill = '#FFBCBC', alpha=0.5) +
+  geom_rect(aes(xmin = 2020, xmax = 2024, ymin = -Inf, ymax = Inf), fill = '#D3F4FF', alpha=0.5) +
+  geom_rect(aes(xmin = 2024, xmax = 2025, ymin = -Inf, ymax = Inf), fill = '#FFBCBC', alpha=0.5) +
+  geom_vline(xintercept = 2007, color = "#808080", size = 0.4, linetype = "longdash") +
+  geom_vline(xintercept = 2007.25, color = "#808080", size = 0.25, linetype = "longdash") +
+  geom_vline(xintercept = 2007.5, color = "#808080", size = 0.4, linetype = "longdash") +
+  geom_vline(xintercept = 2007.75, color = "#808080", size = 0.25, linetype = "longdash") +
+  geom_vline(xintercept = 2008, color = "#808080", size = 0.4, linetype = "longdash") +
+  geom_vline(xintercept = 2008.25, color = "#808080", size = 0.25, linetype = "longdash")  +
+  geom_vline(xintercept = 2008.5, color = "#808080", size = 0.4, linetype = "longdash")  +
+  geom_vline(xintercept = 2008.75, color = "#808080", size = 0.25, linetype = "longdash") +
+  geom_vline(xintercept = 2009, color = "#808080", size = 0.4, linetype = "longdash") +
+  geom_vline(xintercept = 2009.25, color = "#808080", size = 0.25, linetype = "longdash") +
+  geom_vline(xintercept = 2009.5, color = "#808080", size = 0.4, linetype = "longdash") +
+  geom_vline(xintercept = 2009.75, color = "#808080", size = 0.25, linetype = "longdash") +
+  geom_vline(xintercept = 2010, color = "#808080", size = 0.4, linetype = "longdash") +
+  geom_vline(xintercept = 2001, 
+             color = "#808080", size = 0.5, linetype = "longdash") +
+  geom_vline(xintercept = 2020, color = "#808080", size = 0.4, linetype = "longdash") +
+  geom_vline(xintercept = 2020.25, color = "#808080", size = 0.25, linetype = "longdash") +
+  geom_vline(xintercept = 2020.5, color = "#808080", size = 0.4, linetype = "longdash") +
+  geom_vline(xintercept = 2020.75, color = "#808080", size = 0.25, linetype = "longdash") +
+  geom_vline(xintercept = 2021, color = "#808080", size = 0.4, linetype = "longdash") +
+  geom_vline(xintercept = 2021.25, color = "#808080", size = 0.25, linetype = "longdash") +
+  geom_vline(xintercept = 2021.5, color = "#808080", size = 0.4, linetype = "longdash") +
+  geom_vline(xintercept = 2021.75, color = "#808080", size = 0.25, linetype = "longdash") +
+  geom_vline(xintercept = 2022, color = "#808080", size = 0.4, linetype = "longdash") +
+  ylab("GDP Growth (%)") +
+  geom_line(size = 1.3)
+  
+
+gdp_line_graph
+
+ggsave("gdp.jpg", gdp_line_graph)
+```
+
+```{r}
+# welfare data clean
+welfare_clean <- welfare %>%
+  rename("name" = "United States .................................................................................") %>%
+  rename("welfare_spend" = "11,097")
+
+welfare_clean <- welfare_clean[!grepl("^[.]+$", welfare_clean$name), ]
+
+welfare_clean$name <- gsub("([A-Za-z ]+)[.]+.*", "\\1", welfare_clean$name)
+
+welfare_clean_1 <- welfare_clean[-c(53, 8, 10, 15, 21, 29, 42, 47,1), ]
+
+welfare_clean_1 <- welfare_clean_1 %>%
+  left_join(select(clean_join, name, abbreviation), by="name")
+```
+
+```{r}
+welfare_plot <- ggplot(welfare_clean_1) +
+  geom_rect(aes(xmin = 0, xmax = 1, ymin = 0, ymax = 1, fill = welfare_spend)) +
+  scale_fill_binned(low = "#E0A6F3" , high = "#4E0965", n.breaks = 4.5, name = "") +
+  facet_geo(~name) +
+  theme_void() +
+  theme(
+    strip.text = element_blank(),
+    axis.title = element_blank(),
+    legend.text = element_blank()
+  ) +
+  geom_text(aes(x = 0.5, y = 0.5, label = abbreviation),
+            size = 6.3, 
+            color = "white",
+            family = "sans")
+
+welfare_plot
+
+ggsave("tile_gdp.jpg", welfare_plot)
+```
+
+```{r}
+# welfare data clean
+welfare_state_clean <- welfare_state %>%
+  clean_names()
+
+welfare_state_clean$name <- gsub("([A-Za-z ]+)[.]+.*", "\\1", welfare_state_clean$name)
+
+welfare_state_clean <- welfare_state_clean[-c(51, 52, 53, 54, 55), ]
+
+welfare_state_clean_1 <- welfare_state_clean %>%
+  left_join(select(clean_join, name, abbreviation), by="name")
+
+welfare_state_clean_1 <- welfare_state_clean_1 %>%
+  rename("K-12 Ed." = "elementary_secondary_education") %>%
+  rename("Higher Ed." = "higher_education") %>%
+  rename("Public Welfare" = "public_welfare") %>%
+  rename("Healthcare" = "health_and_hospitals") %>%
+  rename("Highways" = "highways") %>%
+  rename("Police" = "police") %>%
+  rename("Other" = "other") %>%
+  pivot_longer(
+    cols = c("K-12 Ed.", "Higher Ed.", "Public Welfare",
+             "Healthcare", "Highways", "Police", "Other"),
+    names_to = "spend_sector",
+    values_to = "value"
+  ) %>%
+  select(name, spend_sector, value, abbreviation) %>%
+  left_join(select(clean_join, name, election_status), by="name") 
+
+  ordered_sectors <- c("K-12 Ed.", "Higher Ed.", "Healthcare", "Public Welfare", "Police", "Highways", "Other")
+  
+  welfare_state_clean_1 <- welfare_state_clean_1 %>%
+  mutate(spend_sector = factor(spend_sector, levels = ordered_sectors))
+```
+
+```{r}
+# Calculate the mean spending for each sector by Democrats
+dem_means <- welfare_state_clean_1 %>%
+  filter(election_status == "D") %>%
+  group_by(spend_sector) %>%
+  summarize(mean_value = mean(value, na.rm = TRUE)) %>%
+  arrange(-desc(mean_value))
+
+# Create a factor with levels ordered by Democratic means
+ordered_sectors <- factor(dem_means$spend_sector, levels = dem_means$spend_sector)
+
+# Create the plot with ordered sectors
+welfare_state_spend_plot_1 <- welfare_state_clean_1 %>%
+  mutate(spend_sector = factor(spend_sector, levels = dem_means$spend_sector)) %>%
+  ggplot(aes(x = spend_sector, y = value, fill = election_status)) +
+  geom_boxplot(outlier.shape = NA) +
+  scale_fill_manual(values = election_palette) +
+  theme_minimal() +
+  theme(
+    legend.position = "none"
+  ) +
+  ylab("Per Capita Welfare Spending ($)") +
+  xlab("Sector") +
+  coord_flip()
+
+welfare_state_spend_plot_1
+
+ggsave("welfare_state.jpg", welfare_state_spend_plot_1)
+```

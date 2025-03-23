@@ -1,0 +1,64 @@
+State,Uninsured Rate  (%),High School Graduation Rate  (%)
+Alabama,9.9,87.9
+Alaska,11.4,93.3
+Arizona,10.7,89
+Arkansas,9.2,88.7
+California,7,84.4
+Colorado,8,92.4
+Connecticut,5.2,91.1
+Delaware,5.7,91.4
+District of Columbia,3.7,92.8
+Florida,12.1,89.8
+Georgia,12.6,89
+Hawaii,3.9,92.9
+Idaho,8.8,91.3
+Illinois,7,90.2
+Indiana,7.5,90.6
+Iowa,4.8,93.3
+Kansas,9.2,91.9
+Kentucky,5.7,88
+Louisiana,7.6,86.7
+Maine,5.7,94.5
+Maryland,6.1,91.1
+Massachusetts,2.5,91.1
+Michigan,5,92
+Minnesota,4.5,94.1
+Mississippi,11.9,86.5
+Missouri,9.4,91.6
+Montana,8.2,94.4
+Nebraska,7.1,92.2
+Nevada,11.6,87.2
+New Hampshire,5.1,94.4
+New Jersey,7.2,91
+New Mexico,10,87.5
+New York,5.2,88
+North Carolina,10.4,89.7
+North Dakota,7.9,93.6
+Ohio,6.5,91.7
+Oklahoma,13.8,88.7
+Oregon,6.1,91.9
+Pennsylvania,5.5,91.9
+Puerto Rico,5.7,79.6
+Rhode Island,4.3,89.1
+South Carolina,10,89.6
+South Dakota,9.5,93.1
+Tennessee,10,89.7
+Texas,18,85.4
+US,8.6,89.4
+Utah,9,93.2
+Vermont,3.7,94.5
+Virginia,6.8,91.4
+Washington,6.4,92.3
+West Virginia,6.1,88.8
+Wisconsin,5.4,93.3
+Wyoming,12.2,93.6
+** State Data Source **,American Community Survey. 2021.,
+** Local Data Source **,American Community Survey. 2021.,
+,,
+NOTES ON THE DATA,,
+Data that is unavailable for certain populations is either represented by a '-' or an 'n/a'.,,
+Margins of error are included where available. See the Methodology section for more detail.,,
+"Uninsured Rate: White=White alone and any ethnicity; Black=Black or African American alone and any ethnicity; Native=American Indian or Alaska Native alone and any ethnicity; Asian=Asian alone and any ethnicity; NH/PI=Native Hawaiian or Other Pacific Islander alone and any ethnicity; Other=Other single race and any ethnicity; Multiracial=Two or more races and any ethnicity; Hispanic/Latinx=Hispanic or Latinx and any race. Note that a single individual, family, or household may fall under multiple categories (i.e., be counted in multiple columns) since the race and ethnicity subgroups are not mutually exclusive.",,
+"Uninsured Rate: Race and ethnicity categories for families and households are defined by the race and ethnicity of the primary householder. For example, families counted in the Black column have a primary householder who is Black or African American alone and of any ethnicity. Similarly, families counted in the Hispanic/Latinx column have a primary householder who is Hispanic or Latinx and of any race.",,
+"High School Graduation Rate: White=White alone and any ethnicity; Black=Black or African American alone and any ethnicity; Native=American Indian or Alaska Native alone and any ethnicity; Asian=Asian alone and any ethnicity; NH/PI=Native Hawaiian or Other Pacific Islander alone and any ethnicity; Other=Other single race and any ethnicity; Multiracial=Two or more races and any ethnicity; Hispanic/Latinx=Hispanic or Latinx and any race. Note that a single individual, family, or household may fall under multiple categories (i.e., be counted in multiple columns) since the race and ethnicity subgroups are not mutually exclusive.",,
+"High School Graduation Rate: Race and ethnicity categories for families and households are defined by the race and ethnicity of the primary householder. For example, families counted in the Black column have a primary householder who is Black or African American alone and of any ethnicity. Similarly, families counted in the Hispanic/Latinx column have a primary householder who is Hispanic or Latinx and of any race.",,
